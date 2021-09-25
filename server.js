@@ -14,6 +14,11 @@ app.use(cors({ optionsSuccessStatus: 200 })); // some legacy browsers choke on 2
 // http://expressjs.com/en/starter/static-files.html
 app.use(express.static('public'));
 
+// check isUnix
+const isUnix = (date) => {
+  return /^\d+$/.test(date);
+};
+
 // http://expressjs.com/en/starter/basic-routing.html
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
@@ -22,6 +27,22 @@ app.get('/', function (req, res) {
 // your first API endpoint...
 app.get('/api/hello', function (req, res) {
   res.json({ greeting: 'hello API' });
+});
+
+app.get('/api', (req, res) => {
+  const now = new Date();
+  res.json({ unix: now.getTime(), utc: now.toUTCString() });
+});
+app.get('/api/:date', (req, res) => {
+  const { date } = req.params;
+  const time = isUnix(date) ? new Date(parseInt(date)) : new Date(date);
+  console.log(time);
+
+  if (time == 'Invalid Date') {
+    res.json({ error: 'Invalid Date' });
+  } else {
+    res.json({ unix: time.getTime(), utc: time.toUTCString() });
+  }
 });
 
 // listen for requests :)
