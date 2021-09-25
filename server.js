@@ -23,6 +23,9 @@ const isUnix = (date) => {
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
+app.get('/timestamp', (req, res) => {
+  res.sendFile(__dirname + '/views/timestamp.html');
+});
 
 app.get('/api', (req, res) => {
   const now = new Date();
