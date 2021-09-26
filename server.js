@@ -32,12 +32,18 @@ app.get('/request-header-parser', (req, res) => {
   res.sendFile(__dirname + '/views/requestHeaderParser.html');
 });
 
-app.get('/api/timestamp', (req, res) => {
+// request Header Parser
+app.get('/api/whoami', (req, res) => {
+  res.json({ value: 'okok' });
+});
+
+// timestamp
+app.get('/api', (req, res) => {
   const now = new Date();
   res.json({ unix: now.getTime(), utc: now.toUTCString() });
 });
 
-app.get('/api/timestamp/:date', (req, res) => {
+app.get('/api/:date', (req, res) => {
   const { date } = req.params;
   const time = isUnix(date) ? new Date(parseInt(date)) : new Date(date);
   console.log(time);
@@ -47,10 +53,6 @@ app.get('/api/timestamp/:date', (req, res) => {
   } else {
     res.json({ unix: time.getTime(), utc: time.toUTCString() });
   }
-});
-
-app.get('/api/whoami', (req, res) => {
-  res.json({ value: 'okok' });
 });
 
 // listen for requests :)
