@@ -23,14 +23,20 @@ const isUnix = (date) => {
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
+
 app.get('/timestamp', (req, res) => {
   res.sendFile(__dirname + '/views/timestamp.html');
+});
+
+app.get('/request-header-parser', (req, res) => {
+  res.sendFile(__dirname + '/views/requestHeaderParser.html');
 });
 
 app.get('/api', (req, res) => {
   const now = new Date();
   res.json({ unix: now.getTime(), utc: now.toUTCString() });
 });
+
 app.get('/api/:date', (req, res) => {
   const { date } = req.params;
   const time = isUnix(date) ? new Date(parseInt(date)) : new Date(date);
