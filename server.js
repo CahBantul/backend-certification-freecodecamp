@@ -1,10 +1,16 @@
+   
+require('dotenv').config();
 // server.js
 // where your node app starts
 
 // init project
 var express = require('express');
+const mongodb = require('mongodb');
+const mongoose = require('mongoose');
 var app = express();
 const port = process.env.PORT || 3000;
+
+mongoose.connect(process.env.DB_URI);
 
 // enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
 // so that your API is remotely testable by FCC
