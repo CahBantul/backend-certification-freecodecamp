@@ -31,6 +31,9 @@ app.get('/timestamp', (req, res) => {
 app.get('/request-header-parser', (req, res) => {
   res.sendFile(__dirname + '/views/requestHeaderParser.html');
 });
+app.get('/url-shortener', (req, res) => {
+  res.sendFile(__dirname + '/views/urlShortener.html');
+});
 
 // request Header Parser
 app.get('/api/whoami', (req, res) => {
