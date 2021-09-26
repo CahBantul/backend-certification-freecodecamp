@@ -34,7 +34,11 @@ app.get('/request-header-parser', (req, res) => {
 
 // request Header Parser
 app.get('/api/whoami', (req, res) => {
-  res.json({ value: 'okok' });
+  res.json({
+    ipaddress: req.connection.remoteAddress,
+    language: req.headers['accept-language'],
+    software: req.headers['user-agent'],
+  });
 });
 
 // timestamp
