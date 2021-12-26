@@ -1,14 +1,15 @@
-   
 require('dotenv').config();
 // server.js
 // where your node app starts
 
+const dns = require('dns');
+const url = require('url');
+
 // init project
 var express = require('express');
-const mongodb = require('mongodb');
 const mongoose = require('mongoose');
 var app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 mongoose.connect(process.env.DB_URI);
 
@@ -66,6 +67,98 @@ app.get('/api/:date', (req, res) => {
   } else {
     res.json({ unix: time.getTime(), utc: time.toUTCString() });
   }
+});
+
+// URLS Shortening Service
+
+// Build a schema and model to store saved URLS
+const ShortURL = mongoose.model(
+  'ShortURL',
+  new mongoose.Schema({
+    short_url: String,
+    original_url: String,
+    suffix: String,
+  })
+);
+// parse application/x-www-form-urlencoded
+app.use(express.urlencoded({ extended: true }));
+// parse application/json
+app.use(express.json());
+
+app.post('/api/shorturl', (req, res) => {
+  const bodyUrl = req.body.url;
+  const parsedLookupUrl = url.parse(bodyUrl);
+
+  if (
+    parsedLookupUrl.protocol == 'http:' ||
+    parsedLookupUrl.protocol == 'https:'
+  ) {
+    const lookupPromise = new Promise((resolve, reject) => {
+      dns.lookup(parsedLookupUrl.host, (err, address, family) => {
+        if (err) reject(err);
+        resolve(address);
+      });
+    });
+
+    lookupPromise.then(
+      async function (address) {
+        try {
+          // check for presense in database
+          let findOne = await URL.findOne({
+            original_url: lookupUrl,
+          });
+          if (findOne) {
+            res.json({
+              original_url: findOne.original_url,
+              short_url: findOne.short_url,
+            });
+          } else {
+            // if the url doesn't exist in database, create new one
+            findOne = new URL({
+              original_url: lookupUrl,
+              short_url: urlCode,
+            });
+            await findOne.save();
+            res.json({
+              original_url: findOne.original_url,
+              short_url: findOne.short_url,
+            });
+          }
+        } catch (err) {
+          console.error(err);
+          res.statur(500).json('Server error...');
+        }
+      },
+      (err) => {
+        res.json({ error: 'invalid url' });
+      }
+    );
+  } else {
+    res.json({ error: 'invalid url' });
+  }
+  // let newURL = new ShortURL({
+  //   short_url: __dirname + '/api/shorturl/' + suffix,
+  //   original_url: client_requested_url,
+  //   suffix: suffix,
+  // });
+
+  // newURL.save((err, doc) => {
+  //   if (err) return console.error(err);
+  //   res.json({
+  //     saved: true,
+  //     short_url: newURL.short_url,
+  //     orignal_url: newURL.original_url,
+  //     suffix: newURL.suffix,
+  //   });
+  // });
+});
+
+app.get('/api/shorturl/:suffix', (req, res) => {
+  let userGeneratedSuffix = req.params.suffix;
+  ShortURL.find({ suffix: userGeneratedSuffix }).then((foundUrls) => {
+    let urlForRedirect = foundUrls[0];
+    res.redirect(urlForRedirect.original_url);
+  });
 });
 
 // listen for requests :)
