@@ -71,23 +71,26 @@ app.get('/api/:date', (req, res) => {
 
 // URLS Shortening Service
 
-// Build a schema and model to store saved URLS
-const ShortURL = mongoose.model(
-  'ShortURL',
-  new mongoose.Schema({
-    short_url: String,
-    original_url: String,
-    suffix: String,
-  })
-);
+// create url model
+const Schema = mongoose.Schema;
+const urlSchema = new Schema({
+  original_url: String,
+  short_url: Number,
+});
+const URL = mongoose.model('URL', urlSchema);
+
 // parse application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
 // parse application/json
 app.use(express.json());
 
-app.post('/api/shorturl', (req, res) => {
-  const bodyUrl = req.body.url;
-  const parsedLookupUrl = url.parse(bodyUrl);
+// api endpoint
+app.post('/api/shorturl', async function (req, res) {
+  const lookupUrl = req.body.url;
+  const parsedLookupUrl = url.parse(lookupUrl);
+
+  let urlCode = await URL.count();
+  urlCode++;
 
   if (
     parsedLookupUrl.protocol == 'http:' ||
@@ -136,29 +139,22 @@ app.post('/api/shorturl', (req, res) => {
   } else {
     res.json({ error: 'invalid url' });
   }
-  // let newURL = new ShortURL({
-  //   short_url: __dirname + '/api/shorturl/' + suffix,
-  //   original_url: client_requested_url,
-  //   suffix: suffix,
-  // });
-
-  // newURL.save((err, doc) => {
-  //   if (err) return console.error(err);
-  //   res.json({
-  //     saved: true,
-  //     short_url: newURL.short_url,
-  //     orignal_url: newURL.original_url,
-  //     suffix: newURL.suffix,
-  //   });
-  // });
 });
 
-app.get('/api/shorturl/:suffix', (req, res) => {
-  let userGeneratedSuffix = req.params.suffix;
-  ShortURL.find({ suffix: userGeneratedSuffix }).then((foundUrls) => {
-    let urlForRedirect = foundUrls[0];
-    res.redirect(urlForRedirect.original_url);
-  });
+app.get('/api/shorturl/:short_url?', async function (req, res) {
+  try {
+    const urlParams = await URL.findOne({
+      short_url: req.params.short_url,
+    });
+    if (urlParams) {
+      return res.redirect(urlParams.original_url);
+    } else {
+      return res.status(404).json('No URL found');
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json('Server error...');
+  }
 });
 
 // listen for requests :)
