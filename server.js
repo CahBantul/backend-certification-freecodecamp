@@ -8,6 +8,8 @@ const url = require('url');
 // init project
 var express = require('express');
 const mongoose = require('mongoose');
+var multer = require('multer');
+var upload = multer({ dest: 'uploads/' });
 var app = express();
 const port = process.env.PORT || 3000;
 
@@ -43,6 +45,18 @@ app.get('/url-shortener', (req, res) => {
 });
 app.get('/exercise-tracker', (req, res) => {
   res.sendFile(__dirname + '/views/exerciseTracker.html');
+});
+app.get('/file-metadata', (req, res) => {
+  res.sendFile(__dirname + '/views/fileMetadata.html');
+});
+
+// file metadata
+app.post('/api/fileanalyse', upload.single('upfile'), (req, res) => {
+  res.json({
+    name: req.file.originalname,
+    type: req.file.mimetype,
+    size: req.file.size,
+  });
 });
 
 // request Header Parser
