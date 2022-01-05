@@ -9,7 +9,7 @@ const url = require('url');
 var express = require('express');
 const mongoose = require('mongoose');
 var app = express();
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 
 mongoose.connect(process.env.DB_URI);
 
