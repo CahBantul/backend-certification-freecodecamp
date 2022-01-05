@@ -29,7 +29,7 @@ const isUnix = (date) => {
 };
 
 // http://expressjs.com/en/starter/basic-routing.html
-app.get('/', function (req, res) {
+app.get('/home', function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
@@ -46,7 +46,7 @@ app.get('/url-shortener', (req, res) => {
 app.get('/exercise-tracker', (req, res) => {
   res.sendFile(__dirname + '/views/exerciseTracker.html');
 });
-app.get('/file-metadata', (req, res) => {
+app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/fileMetadata.html');
 });
 
