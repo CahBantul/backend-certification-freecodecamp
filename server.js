@@ -9,7 +9,7 @@ const url = require('url');
 var express = require('express');
 const mongoose = require('mongoose');
 var app = express();
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 
 mongoose.connect(process.env.DB_URI);
 
@@ -41,6 +41,9 @@ app.get('/request-header-parser', (req, res) => {
 app.get('/url-shortener', (req, res) => {
   res.sendFile(__dirname + '/views/urlShortener.html');
 });
+app.get('/exercise-tracker', (req, res) => {
+  res.sendFile(__dirname + '/views/exerciseTracker.html');
+});
 
 // request Header Parser
 app.get('/api/whoami', (req, res) => {
@@ -49,24 +52,6 @@ app.get('/api/whoami', (req, res) => {
     language: req.headers['accept-language'],
     software: req.headers['user-agent'],
   });
-});
-
-// timestamp
-app.get('/api', (req, res) => {
-  const now = new Date();
-  res.json({ unix: now.getTime(), utc: now.toUTCString() });
-});
-
-app.get('/api/:date', (req, res) => {
-  const { date } = req.params;
-  const time = isUnix(date) ? new Date(parseInt(date)) : new Date(date);
-  console.log(time);
-
-  if (time == 'Invalid Date') {
-    res.json({ error: 'Invalid Date' });
-  } else {
-    res.json({ unix: time.getTime(), utc: time.toUTCString() });
-  }
 });
 
 // URLS Shortening Service
@@ -80,7 +65,7 @@ const urlSchema = new Schema({
 const URL = mongoose.model('URL', urlSchema);
 
 // parse application/x-www-form-urlencoded
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
 // parse application/json
 app.use(express.json());
 
@@ -169,6 +154,7 @@ const UserSchema = new Schema({
 });
 const User = mongoose.model('User', UserSchema);
 const Exercise = mongoose.model('Exercise', ExerciseSchema);
+
 app.post('/api/users', (req, res) => {
   console.log(`req.body`, req.body);
   const newUser = new User({
@@ -264,6 +250,24 @@ app.get('/api/users', (req, res) => {
       res.json(data);
     }
   });
+});
+
+// timestamp
+app.get('/api', (req, res) => {
+  const now = new Date();
+  res.json({ unix: now.getTime(), utc: now.toUTCString() });
+});
+
+app.get('/api/:date', (req, res) => {
+  const { date } = req.params;
+  const time = isUnix(date) ? new Date(parseInt(date)) : new Date(date);
+  console.log(time);
+
+  if (time == 'Invalid Date') {
+    res.json({ error: 'Invalid Date' });
+  } else {
+    res.json({ unix: time.getTime(), utc: time.toUTCString() });
+  }
 });
 
 // listen for requests :)
